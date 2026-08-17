@@ -378,8 +378,7 @@
   .modal p strong{color:var(--ink)}
   .modal-sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
   .modal-source{font-size:11px;border:1px solid var(--line);padding:7px 12px;border-radius:2px;
-    background:#f7f6f2;color:var(--ink2);text-decoration:none;transition:all .2s;font-family:-apple-system,sans-serif}
-  .modal-source:hover{border-color:var(--cyan);color:var(--cyan)}
+    background:#f7f6f2;color:var(--ink2);text-decoration:none;font-family:-apple-system,sans-serif;display:inline-block}
 
   /* Animations */
   .reveal{opacity:0;transform:translateY(15px);transition:opacity .6s ease,transform .6s ease}
@@ -2151,7 +2150,7 @@ function openModal(key){
   document.getElementById('modalTag').textContent=d.tag;
   document.getElementById('modalTitle').textContent=d.title;
   document.getElementById('modalBody').innerHTML=d.body.map(p=>`<p>${p}</p>`).join('');
-  document.getElementById('modalSources').innerHTML=d.sources.map(([name,url])=>`<a href="${url}" target="_blank" class="modal-source">${name} ↗</a>`).join('');
+  document.getElementById('modalSources').innerHTML=d.sources.map(([name,url])=>`<span class="modal-source" style="cursor:default;pointer-events:none;text-decoration:none;">${name}</span>`).join('');
   const m=document.getElementById('modalBack');
   m.style.display='flex';
 }
