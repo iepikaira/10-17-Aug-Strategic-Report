@@ -1,1 +1,1295 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Στρατηγικό Κέντρο Κατάστασης — Διαδραστική γεωπολιτική, γεωστρατηγική και γεωοικονομική αποτύπωση για την περίοδο 10–17 Αυγούστου 2026.">
+<title>SITROOM · Παγκόσμια Γεωπολιτική Κατάσταση | 10–17 Αυγ 2026</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://basemaps.cartocdn.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+  :root{
+    --bg:#f7f6f2; --bg2:#eceae4; --panel:#ffffff; --panel-solid:#ffffff;
+    --ink:#121212; --ink2:#2b2b2b; --muted:#666666; --line:#e2e2e2;
+    --accent:#b31b1b; --accent2:#cd2c2c; --cyan:#0f5480; --cyan2:#186fa6;
+    --amber:#b85d00; --amber2:#d97308; --green:#1b7a3e; --green2:#289e52;
+    --violet:#5c39a2; --gold:#a37b00;
+    --glow:0 4px 20px rgba(0,0,0,0.05);
+    --glass:rgba(0,0,0,0.02);
+    --border:1px solid #e2e2e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Georgia','Times New Roman',serif;
+    line-height:1.6;overflow-x:hidden;
+    background-color:#f7f6f2;
+    background-image:linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px);
+    background-size:100% 3px;
+    background-attachment:fixed;
+  }
+  #particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.35}
+  button,input{font:inherit}
+  a{color:var(--cyan);text-decoration:none;transition:color .2s}
+  a:hover{color:var(--cyan2);text-decoration:underline}
 
+  /* Grid overlay */
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(0,0,0,0.02) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(0,0,0,0.02) 1px,transparent 1px);
+    background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 0%,transparent 80%)}
+
+  /* Top bar */
+  .topbar{
+    position:sticky;top:0;z-index:100;
+    background:rgba(247,246,242,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-bottom:2px solid #121212;
+    padding:12px 28px;
+  }
+  .topbar-inner{max-width:1600px;margin:auto;display:flex;align-items:center;gap:20px;justify-content:space-between;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-logo{width:32px;height:32px;border-radius:4px;
+    display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+  .brand-text{font-size:22px;letter-spacing:.05em;color:var(--ink2);font-family:'Georgia',serif;}
+  .brand-text strong{color:var(--ink);font-weight:700}
+  .topbar-right{display:flex;align-items:center;gap:16px}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite}
+  .date-tag{font-size:11px;color:var(--ink2);font-family:'Courier New',monospace;border:1px solid var(--line);padding:5px 10px;border-radius:2px;background:#fff;letter-spacing:.05em}
+  .status-pill{display:inline-flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* Hero */
+  .hero{position:relative;z-index:2;max-width:1600px;margin:40px auto 0;padding:0 32px}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    text-transform:uppercase;letter-spacing:.15em;font-size:11px;
+    color:var(--accent);font-weight:700;
+    padding:6px 14px;border:1px solid rgba(179,27,27,0.3);
+    background:rgba(179,27,27,0.04);border-radius:2px;
+    margin-bottom:20px;
+  }
+  .hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--accent);border-radius:50%}
+  h1{
+    font-family:'Playfair Display','Georgia','Times New Roman',serif;
+    font-size: clamp(32px, 5vw, 64px);line-height:1.05;
+    font-weight:700;letter-spacing:-0.02em;margin:14px 0 24px;
+    color:var(--ink);
+    max-width:1100px;
+   line-height: 38px;
+  }
+  h1 .accent{font-style:italic;color:var(--accent);background:none;-webkit-text-fill-color:initial}
+  .dek{font-size:21px;max-width:820px;color:var(--ink2);margin:0 0 32px;line-height:1.5;font-family:'Georgia',serif}
+  .dek strong{color:var(--ink)}
+  .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
+  .stat-card{
+    background:var(--panel);
+    border:var(--border);border-radius:4px;padding:20px;
+    position:relative;overflow:hidden;transition:transform .2s,border-color .2s;
+    box-shadow:0 2px 8px rgba(0,0,0,0.03);
+  }
+  .stat-card:hover{transform:translateY(-2px);border-color:#b5b5b5}
+  .stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--accent);opacity:.8}
+  .stat-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px;font-family:-apple-system,sans-serif}
+  .stat-value{font-size:38px;font-weight:700;font-family:'Courier New',monospace;line-height:1;color:var(--ink);letter-spacing:-0.02em}
+  .stat-value .unit{font-size:16px;color:var(--muted);margin-left:4px;font-weight:500}
+  .stat-trend{display:inline-flex;align-items:center;gap:6px;font-size:11px;margin-top:10px;padding:3px 8px;border-radius:2px;font-family:-apple-system,sans-serif;font-weight:600}
+  .trend-up{background:rgba(179,27,27,0.08);color:var(--accent)}
+  .trend-down{background:rgba(27,122,62,0.08);color:var(--green)}
+  .trend-stable{background:rgba(184,93,0,0.08);color:var(--amber)}
+
+  /* Section titles */
+  .section{position:relative;z-index:2;max-width:1600px;margin:0 auto;padding:60px 32px}
+  .section-label{
+    display:inline-block;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
+    font-weight:700;margin-bottom:10px;
+  }
+  .section-label::before{content:"\25A0 ";color:var(--accent)}
+  .section-title{
+    font-family:'Playfair Display','Georgia','Times New Roman',serif;
+    font-size:clamp(28px,3.5vw,46px);line-height:1.1;font-weight:700;
+    letter-spacing:-0.01em;margin-bottom:14px;color:var(--ink);max-width:900px;
+  }
+  .section-sub{font-size:16px;color:var(--muted);max-width:720px;margin-bottom:32px;line-height:1.6;font-family:'Georgia',serif}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,.8fr);gap:24px;align-items:start}
+  .panel{
+    background:var(--panel);
+    border:var(--border);border-radius:4px;overflow:hidden;
+    position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.03);
+  }
+  .panel-glow{display:none}
+
+  /* Map */
+  #map{height:680px;background:#e4e2dd}
+  .leaflet-container{background:#e4e2dd !important;font-family:-apple-system,sans-serif}
+  .map-panel{position:relative}
+  .map-toolbar{position:absolute;top:16px;left:16px;z-index:800;display:flex;flex-wrap:wrap;gap:8px;max-width:calc(100% - 32px)}
+  .map-btn{
+    border:1px solid #ccc;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);
+    padding:8px 14px;border-radius:2px;cursor:pointer;
+    color:var(--ink2);font-size:12px;font-weight:600;font-family:-apple-system,sans-serif;
+    transition:all .2s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);
+  }
+  .map-btn .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
+  .map-btn:hover{color:var(--ink);border-color:#888;background:#fff}
+  .map-btn.active{background:#121212;color:#fff;border-color:#121212}
+  .map-btn.active .dot{background:#fff;box-shadow:none}
+  .map-legend{position:absolute;bottom:16px;left:16px;z-index:800;
+    background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+    padding:14px 18px;border-radius:2px;border:var(--border);
+    font-size:11px;color:var(--ink2);max-width:420px;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-family:-apple-system,sans-serif}
+  .map-legend strong{color:var(--ink);font-weight:700;display:block;margin-bottom:6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .legend-item{display:inline-flex;align-items:center;gap:6px;font-size:11px}
+  .legend-icon{width:10px;height:10px;border-radius:50%}
+  .map-info{position:absolute;bottom:16px;right:16px;z-index:800;
+    background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+    padding:12px 16px;border-radius:2px;border:var(--border);
+    font-size:10px;color:var(--muted);font-family:'Courier New',monospace;max-width:320px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+
+  /* Brief panel */
+  .brief{padding:28px}
+  .brief h2{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:20px;letter-spacing:-0.01em;border-bottom:2px solid #121212;padding-bottom:8px}
+  .insight-card{
+    background:#fdfcf9;
+    border:1px solid #e0dad0;border-left:4px solid var(--accent);border-radius:2px;padding:18px;margin-bottom:20px;
+    position:relative;overflow:hidden;
+  }
+  .insight-card::before{display:none}
+  .insight-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px;font-family:-apple-system,sans-serif}
+  .insight-text{font-size:14px;color:var(--ink);line-height:1.6;font-family:'Georgia',serif}
+  .signal-list{margin-top:8px}
+  .signal{
+    padding:16px 0;border-top:1px solid var(--line);cursor:pointer;transition:background-color .2s;
+    position:relative;
+  }
+  .signal:first-of-type{border-top:0}
+  .signal:hover{background:rgba(0,0,0,0.01)}
+  .signal-head{display:flex;align-items:flex-start;gap:14px}
+  .signal-num{
+    width:32px;height:32px;border-radius:2px;flex:0 0 auto;
+    display:grid;place-items:center;font-weight:700;font-size:13px;
+    font-family:'Courier New',monospace;
+    background:#121212;
+    color:#fff;border:none;
+  }
+  .signal-content h3{font-size:16px;margin-bottom:4px;color:var(--ink);font-weight:700;line-height:1.3;font-family:'Georgia',serif}
+  .signal-content p{font-size:13px;color:var(--muted);margin:0;line-height:1.5;font-family:-apple-system,sans-serif}
+  .signal-arrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-top:8px;
+    display:inline-flex;align-items:center;gap:6px;font-weight:700;font-family:-apple-system,sans-serif}
+  .signal-arrow::after{content:"→";transition:transform .2s}
+  .signal:hover .signal-arrow::after{transform:translateX(4px)}
+
+  /* Events grid */
+  .events-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+  .event-card{
+    background:var(--panel);border:var(--border);
+    border-radius:2px;padding:24px;cursor:pointer;
+    position:relative;overflow:hidden;transition:all .25s ease;
+    box-shadow:0 2px 6px rgba(0,0,0,0.02);
+  }
+  .event-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:#121212;opacity:0;transition:opacity .2s}
+  .event-card:hover{transform:translateY(-3px);border-color:#b5b5b5;box-shadow:0 6px 16px rgba(0,0,0,0.06)}
+  .event-card:hover::before{opacity:1}
+  .event-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px}
+  .event-date{font-family:'Courier New',monospace;font-size:11px;color:var(--muted);letter-spacing:.05em;font-weight:600}
+  .event-urgency{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:2px;font-family:-apple-system,sans-serif}
+  .urgency-critical{background:rgba(179,27,27,0.1);color:var(--accent);border:1px solid rgba(179,27,27,0.25)}
+  .urgency-high{background:rgba(184,93,0,0.1);color:var(--amber);border:1px solid rgba(184,93,0,0.25)}
+  .urgency-elevated{background:rgba(92,57,162,0.1);color:var(--violet);border:1px solid rgba(92,57,162,0.25)}
+  .event-title{font-family:'Playfair Display','Georgia',serif;font-size:21px;line-height:1.2;margin-bottom:10px;letter-spacing:-0.01em;color:var(--ink);font-weight:700}
+  .event-brief{font-size:13.5px;color:var(--ink2);margin-bottom:18px;line-height:1.5;font-family:'Georgia',serif}
+  .event-tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:10px;letter-spacing:.05em;padding:4px 8px;border-radius:2px;font-weight:600;font-family:-apple-system,sans-serif;
+    background:#f2f0ea;border:1px solid #d8d4c8;color:var(--ink2)}
+  .tag.geo{color:var(--cyan);border-color:rgba(15,84,128,0.3);background:rgba(15,84,128,0.06)}
+  .tag.mil{color:var(--accent);border-color:rgba(179,27,27,0.3);background:rgba(179,27,27,0.06)}
+  .tag.econ{color:var(--amber);border-color:rgba(184,93,0,0.3);background:rgba(184,93,0,0.06)}
+
+  /* Pressure matrix */
+  .matrix-wrap{overflow:auto;padding:4px}
+  table{width:100%;border-collapse:separate;border-spacing:4px;font-size:13px;min-width:860px}
+  th,td{border-radius:2px;padding:12px 10px;text-align:center}
+  th{background:#eae8e1;color:var(--ink);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-family:-apple-system,sans-serif}
+  th:first-child,td:first-child{text-align:left;font-weight:700;color:var(--ink);font-family:'Georgia',serif}
+  td:first-child{background:#f4f2ec}
+  .matrix-btn{width:100%;height:100%;border:0;background:transparent;cursor:pointer;
+    font-weight:700;font-size:18px;font-family:'Courier New',monospace;
+    color:var(--ink);padding:6px;border-radius:2px;transition:all .2s;position:relative}
+  .matrix-btn:hover{transform:scale(1.05);box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+  .level-1{background:rgba(27,122,62,0.12);color:var(--green)}
+  .level-2{background:rgba(15,84,128,0.12);color:var(--cyan)}
+  .level-3{background:rgba(184,93,0,0.15);color:var(--amber)}
+  .level-4{background:rgba(205,44,44,0.18);color:var(--accent2)}
+  .level-5{background:rgba(179,27,27,0.22);color:var(--accent);font-weight:800}
+
+  /* Gauges */
+  .gauges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .gauge-card{
+    background:var(--panel);border:var(--border);
+    border-radius:2px;padding:24px;position:relative;overflow:hidden;
+    box-shadow:0 2px 6px rgba(0,0,0,0.02);
+  }
+  .gauge-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+  .gauge-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.01em;font-family:'Georgia',serif}
+  .gauge-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:-apple-system,sans-serif}
+  .gauge-badge{font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 6px;border-radius:2px;font-weight:700;font-family:-apple-system,sans-serif}
+  .gauge-svg{display:block;margin:0 auto}
+  .gauge-value{font-family:'Courier New',monospace;font-size:32px;font-weight:700;text-align:center;margin-top:8px}
+  .gauge-label{text-align:center;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:4px;font-family:-apple-system,sans-serif}
+  .gauge-track{stroke:rgba(0,0,0,0.08)}
+  .gauge-fill{transition:stroke-dashoffset 1.8s cubic-bezier(.2,.8,.2,1)}
+
+  /* Network */
+  .network-wrap{padding:24px}
+  .network-svg{width:100%;height:420px;display:block}
+  .network-node{
+    cursor:pointer;
+    transition:opacity .25s ease;
+  }
+  .network-node circle,
+  .network-node text{
+    transition:filter .25s ease, opacity .25s ease;
+  }
+  .network-node:hover circle{
+    filter:brightness(0.9);
+  }
+  .network-label{font-size:11px;fill:var(--ink2);font-weight:600;pointer-events:none;text-anchor:middle;font-family:-apple-system,sans-serif}
+  .network-link{stroke-width:1.5;fill:none;opacity:.5;transition:opacity .3s,stroke-width .3s}
+  .network-link.active{opacity:1;stroke-width:2.5}
+
+  /* Timeline */
+  .timeline-wrap{padding:20px 10px}
+  .timeline-scroll{overflow-x:auto;padding:20px 0 30px}
+  .timeline-svg{min-width:1200px;height:300px;display:block}
+  .tl-dot{transition:all .3s}
+  .tl-label{font-size:11px;fill:var(--ink2);font-weight:600;font-family:-apple-system,sans-serif}
+  .tl-date{font-size:10px;fill:var(--muted);font-family:'Courier New',monospace;letter-spacing:.05em}
+  .tl-card{font-size:12px;fill:var(--ink);font-weight:600;font-family:'Georgia',serif}
+
+  /* Lower grid */
+  .lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .timeline-section{padding:28px}
+  .tl-list{margin-top:12px}
+  .tl-item{
+    position:relative;padding:16px 0 16px 24px;border-left:2px solid #121212;
+    margin-left:8px;
+  }
+  .tl-item::before{
+    content:"";position:absolute;left:-6px;top:20px;width:10px;height:10px;border-radius:50%;
+    background:var(--accent);
+  }
+  .tl-item .date{font-family:'Courier New',monospace;font-size:11px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;font-weight:700;margin-bottom:4px}
+  .tl-item h3{font-size:16px;margin-bottom:5px;font-weight:700;color:var(--ink);font-family:'Georgia',serif}
+  .tl-item p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.5;font-family:-apple-system,sans-serif}
+
+  /* Watchlist */
+  .watchlist{padding:28px}
+  .watch-item{
+    background:#fdfcfa;border:1px solid #e0dad0;
+    border-radius:2px;padding:18px;margin-bottom:14px;
+    transition:all .2s;position:relative;overflow:hidden;
+  }
+  .watch-item:hover{border-color:#b5b5b5;background:#fff}
+  .watch-item::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--cyan)}
+  .watch-head{display:flex;align-items:flex-start;gap:14px}
+  .watch-num{font-family:'Courier New',monospace;font-size:12px;color:var(--cyan);font-weight:700;letter-spacing:.1em;flex:0 0 auto}
+  .watch-content h3{font-size:16px;font-weight:700;margin-bottom:6px;color:var(--ink);line-height:1.3;font-family:'Georgia',serif}
+  .watch-content p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55;font-family:-apple-system,sans-serif}
+
+  /* Summary */
+  .summary-section{padding:36px}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+  .summary-text{font-size:16px;color:var(--ink2);line-height:1.7;font-family:'Georgia',serif}
+  .summary-text p{margin-bottom:18px}
+  .summary-text strong{color:var(--ink);font-weight:700}
+  .summary-text .highlight{color:var(--accent);font-style:italic;font-weight:600}
+  .summary-visual{
+    background:#f9f8f4;
+    border:var(--border);border-radius:2px;padding:26px;
+  }
+  .power-node{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .power-node:last-child{border-bottom:0}
+  .power-icon{width:40px;height:40px;border-radius:2px;display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto;font-family:'Courier New',monospace}
+  .power-content{flex:1}
+  .power-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;font-family:-apple-system,sans-serif}
+  .power-role{font-size:12px;color:var(--muted);font-family:'Georgia',serif}
+  .power-bar{height:6px;background:#e5e2d9;border-radius:2px;margin-top:8px;overflow:hidden}
+  .power-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+
+  /* Methodology note */
+  .method-note{
+    background:#f2f0ea;border:1px solid #dcd7ca;
+    border-radius:2px;padding:16px 20px;margin-top:30px;font-size:12.5px;color:var(--ink2);line-height:1.6;
+    display:flex;gap:14px;align-items:flex-start;font-family:-apple-system,sans-serif;
+  }
+  .method-note::before{content:"ⓘ";color:var(--amber);font-weight:700;font-size:18px;flex:0 0 auto;line-height:1.4}
+
+  /* Sources */
+  .sources-section{padding:40px}
+  .source-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .source-card{
+    background:var(--panel);border:var(--border);border-radius:2px;padding:16px 18px;
+    transition:all .2s;text-decoration:none;display:block;box-shadow:0 1px 4px rgba(0,0,0,0.02);
+  }
+  .source-card:hover{border-color:#b5b5b5;transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,0.05);color:var(--ink)}
+  .source-pub{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:5px}
+  .source-title{font-size:13px;color:var(--ink);font-weight:600;line-height:1.4;font-family:'Georgia',serif}
+  .source-date{font-size:11px;color:var(--muted);margin-top:4px;font-family:-apple-system,sans-serif}
+
+  /* Footer */
+  footer{background:#121212;border-top:2px solid #000;color:#e8e8e8;padding:40px 28px;margin-top:60px}
+  .foot-inner{max-width:1600px;margin:auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px}
+  footer h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;margin-bottom:14px;font-weight:700;font-family:-apple-system,sans-serif}
+  footer p,footer li{font-size:12px;color:#aaa;line-height:1.6;font-family:-apple-system,sans-serif}
+  footer ul{list-style:none}
+  footer ul li{margin-bottom:8px}
+  .foot-bottom{max-width:1600px;margin:30px auto 0;padding-top:24px;border-top:1px solid #333;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-size:11px;color:#888;font-family:'Courier New',monospace}
+
+  /* Modal */
+  .modal-back{display:none;position:fixed;inset:0;background:rgba(247,246,242,0.85);backdrop-filter:blur(8px);
+    z-index:2000;padding:24px;align-items:center;justify-content:center;animation:fadeIn .3s}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:#ffffff;border:1px solid #121212;
+    max-width:860px;width:100%;max-height:90vh;overflow:auto;
+    border-radius:2px;padding:40px;position:relative;
+    box-shadow:0 10px 40px rgba(0,0,0,0.15);animation:slideUp .3s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(15px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-close{position:absolute;right:18px;top:18px;border:1px solid var(--line);background:#f4f2ec;
+    width:36px;height:36px;border-radius:2px;font-size:20px;cursor:pointer;color:var(--ink);
+    transition:all .2s;display:grid;place-items:center;font-family:-apple-system,sans-serif}
+  .modal-close:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .modal-tag{font-family:'Courier New',monospace;font-size:11px;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;display:inline-block}
+  .modal h2{font-family:'Playfair Display','Georgia',serif;font-size:32px;line-height:1.15;margin-bottom:20px;letter-spacing:-0.01em;font-weight:700}
+  .modal p{font-size:15px;color:var(--ink2);margin-bottom:16px;line-height:1.7;font-family:'Georgia',serif}
+  .modal p strong{color:var(--ink)}
+  .modal-sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+  .modal-source{font-size:11px;border:1px solid var(--line);padding:7px 12px;border-radius:2px;
+    background:#f7f6f2;color:var(--ink2);text-decoration:none;transition:all .2s;font-family:-apple-system,sans-serif}
+  .modal-source:hover{border-color:var(--cyan);color:var(--cyan)}
+
+  /* Animations */
+  .reveal{opacity:0;transform:translateY(15px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:#f7f6f2}
+  ::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+  ::-webkit-scrollbar-thumb:hover{background:#999}
+
+  /* Leaflet custom markers */
+  .pulse-marker{
+    width:20px;height:20px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 0 rgba(179,27,27,0.5);animation:pulseRing 2s infinite;
+    display:grid;place-items:center;border:2px solid #fff;
+  }
+  .pulse-marker.cyan{background:var(--cyan);box-shadow:0 0 0 0 rgba(15,84,128,0.5)}
+  .pulse-marker.amber{background:var(--amber);box-shadow:0 0 0 0 rgba(184,93,0,0.5)}
+  .pulse-marker.violet{background:var(--violet);box-shadow:0 0 0 0 rgba(92,57,162,0.5)}
+  .pulse-marker::after{content:"";width:6px;height:6px;background:#fff;border-radius:50%}
+  @keyframes pulseRing{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 16px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+  .leaflet-popup-content-wrapper{background:#ffffff;color:var(--ink);border:1px solid #ccc;border-radius:2px;box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+  .leaflet-popup-tip{background:#ffffff}
+  .leaflet-popup-content{margin:14px 16px;font-size:13px;line-height:1.5;font-family:'Georgia',serif}
+  .leaflet-popup-content strong{color:var(--accent);font-size:14px;display:block;margin-bottom:6px;font-weight:700}
+
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}.lower-grid{grid-template-columns:1fr}.events-grid{grid-template-columns:1fr 1fr}.gauges-grid{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:1fr 1fr}.foot-inner{grid-template-columns:1fr}}
+  @media(max-width:640px){.events-grid,.gauges-grid,.hero-stats{grid-template-columns:1fr}#map{height:520px}.topbar-inner{flex-direction:column;align-items:flex-start}.hero{margin-top:20px}.section{padding:40px 16px}.hero{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="grid-bg"></div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-logo"><img src="https://1.bp.blogspot.com/-OlmEQqx9g1M/XZMcPt9Cl_I/AAAAAAAANCM/v3HNrsr6BvUErqHzAuFXKeTOXHIu2aaTACLcBGAsYHQ/s63/Favicon%2Bi-Epikaira%2B1.3.png" width="25" ></div>
+      <div class="brand-text"><strong>iEpikaira </strong>· Strategic Situation</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill"><span class="live-dot"></span>SITREP ACTIVE</div>
+      <div class="date-tag">10–17 ΑΥΓ 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- Hero -->
+<header class="hero reveal">
+  <div class="hero-eyebrow">Γεωπολιτική · Γεωστρατηγική · Γεωοικονομία</div>
+  <h1>Από τις <span class="accent">Μεμονωμένες Κρίσεις </span> στο Νέο Πλέγμα Ισχύος</h1>
+  <p class="dek">Διαδραστική απεικόνιση των παγκόσμιων εξελίξεων της εβδομάδας 10 - 17 Αυγούστου 2026.</p>
+
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-label">Brent Crude</div>
+      <div class="stat-value" data-count="89"><span class="unit">$</span>0</div>
+      <div class="stat-trend trend-up">↑ Πίεση στο 14μηνο υψηλό</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Διελεύσεις Ορμούζ / ημέρα</div>
+      <div class="stat-value" data-count="8">0</div>
+      <div class="stat-trend trend-down">−94% σε σχέση με προπολεμικά</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Εμβέλεια UAV (UA→RU)</div>
+      <div class="stat-value" data-count="1100"><span class="unit">km</span>0</div>
+      <div class="stat-trend trend-up">↑ Βάθος πλήγματος στο Ταταρστάν</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ενεργοί στρατηγικοί άξονες</div>
+      <div class="stat-value" data-count="3">0</div>
+      <div class="stat-trend trend-stable">Συγκλίνουσες κρίσεις</div>
+    </div>
+  </div>
+</header>
+
+<!-- Map + Brief -->
+<section class="section reveal">
+  <div class="layout">
+    <div class="panel map-panel">
+      <div class="panel-glow"></div>
+      <div id="map"></div>
+      <div class="map-toolbar" id="mapToolbar">
+        <button class="map-btn active" data-layer="all"><span class="dot"></span>Όλα</button>
+        <button class="map-btn" data-layer="hormuz"><span class="dot"></span>Ορμούζ</button>
+        <button class="map-btn" data-layer="ukraine"><span class="dot"></span>Ουκρανία</button>
+        <button class="map-btn" data-layer="gaza"><span class="dot"></span>Γάζα</button>
+        <button class="map-btn" data-layer="turkey"><span class="dot"></span>Τουρκία / Αν. Μεσόγειος</button>
+        <button class="map-btn" data-layer="global"><span class="dot"></span>Κόμβοι ισχύος</button>
+      </div>
+      <div class="map-legend">
+        <strong>Στρατηγικοί Κόμβοι · Αναλυτική Απεικόνιση</strong>
+        <div class="legend-row">
+          <div class="legend-item"><span class="legend-icon" style="background:var(--accent);box-shadow:0 0 6px var(--accent)"></span>Κρίσιμο σημείο</div>
+          <div class="legend-item"><span class="legend-icon" style="background:var(--cyan)"></span>Δευτερεύων κόμβος</div>
+          <div class="legend-item"><span style="display:inline-block;width:18px;height:2px;border-top:2px dashed var(--accent);vertical-align:middle"></span>Διάδρομος / σχέση</div>
+        </div>
+      </div>
+      <div class="map-info">Συντεταγμένες: στρατηγικοί κόμβοι ·<br>Δεν αποτελούν επιχειρησιακές θέσεις</div>
+    </div>
+
+    <aside class="panel brief">
+      <div class="panel-glow"></div>
+      <div style="padding:28px">
+        <h2>Η εικόνα σε μία ανάγνωση</h2>
+        <div class="insight-card">
+          <div class="insight-label">Στρατηγική Παρατήρηση</div>
+          <div class="insight-text">Η εβδομάδα σηματοδοτεί τη μετάβαση από μεμονωμένες κρίσεις σε ένα <strong>αλληλοσυνδεόμενο σύστημα πίεσης</strong>: ενέργεια, θαλάσσιες οδοί, υποδομές, κυρώσεις και περιφερειακές συμφωνίες λειτουργούν πλέον ως ενιαίο στρατηγικό πεδίο.</div>
+        </div>
+
+        <div class="signal-list">
+          <div class="signal" data-open="hormuz">
+            <div class="signal-head">
+              <div class="signal-num">01</div>
+              <div class="signal-content">
+                <h3>Ορμούζ · η στρατιωτική υπεροχή δεν παράγει έλεγχο</h3>
+                <p>Η Τεχεράνη αξιοποιεί έναν στενό θαλάσσιο κόμβο ως πολλαπλασιαστή ισχύος, επιβάλλοντας κόστος χωρίς πλήρη στρατιωτική επικράτηση.</p>
+                <div class="signal-arrow">Ανάλυση</div>
+              </div>
+            </div>
+          </div>
+          <div class="signal" data-open="ukraine">
+            <div class="signal-head">
+              <div class="signal-num">02</div>
+              <div class="signal-content">
+                <h3>Ουκρανία · πόλεμος δικτύων και υποδομών</h3>
+                <p>Η σύγκρουση μετατοπίζεται από τη γραμμή του μετώπου σε διυλιστήρια, λιμάνια, γέφυρες και εναλλακτικούς εμπορικούς διαδρόμους.</p>
+                <div class="signal-arrow">Ανάλυση</div>
+              </div>
+            </div>
+          </div>
+          <div class="signal" data-open="middleeast">
+            <div class="signal-head">
+              <div class="signal-num">03</div>
+              <div class="signal-content">
+                <h3>Μέση Ανατολή · πολλαπλή εξισορρόπηση</h3>
+                <p>Τουρκία, Αίγυπτος, Σαουδική Αραβία και Πακιστάν συγκροτούν νέο περιφερειακό πλέγμα ασφαλείας πέρα από την αμερικανική ομπρέλα.</p>
+                <div class="signal-arrow">Ανάλυση</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- Events -->
+<section class="section reveal">
+  <div class="section-label">Πυρήνας της εβδομάδας</div>
+  <h2 class="section-title">Έξι εξελίξεις που διαμορφώνουν τον χάρτη</h2>
+  <p class="section-sub">Κάθε κάρτα ανοίγει αναλυτικό πλαίσιο με γεγονότα, εκτίμηση και πηγές. Τα δεδομένα κωδικοποιούνται από δημοσιευμένες πηγές της περιόδου 10–17 Αυγούστου 2026.</p>
+  <div class="events-grid">
+    <article class="event-card" data-open="hormuz">
+      <div class="event-header">
+        <div class="event-date">10–17 ΑΥΓ · ΟΡΜΟΥΖ</div>
+        <div class="event-urgency urgency-critical">ΚΡΙΣΙΜΟ</div>
+      </div>
+      <h3 class="event-title">Ιράν–ΗΠΑ · το στενό ως πολλαπλασιαστής ισχύος</h3>
+      <p class="event-brief">Η διέλευση εμπορικών πλοίων υποχώρησε σε μονοψήφιο αριθμό. Το Brent κινήθηκε κοντά στα $89. Η Ουάσιγκτον επιχειρεί στροφή στην οικονομική πίεση.</p>
+      <div class="event-tags"><span class="tag mil">Στρατιωτικό</span><span class="tag econ">Ενεργειακό</span><span class="tag geo">Γεωγραφία</span></div>
+    </article>
+    <article class="event-card" data-open="ukraine">
+      <div class="event-header">
+        <div class="event-date">10–17 ΑΥΓ · ΕΥΡΩΠΗ</div>
+        <div class="event-urgency urgency-critical">ΚΡΙΣΙΜΟ</div>
+      </div>
+      <h3 class="event-title">Ουκρανία · πόλεμος υποδομών & διαδρόμων</h3>
+      <p class="event-brief">Πλήγματα 1.100 χλμ. στο Ταταρστάν, χτύπημα στη γέφυρα Μαγιάκι (Οδησσός–Μολδαβία/Ρουμανία). Η γεωγραφία λιμανιών και αγωγών αποκτά βαρύτητα ίση με το μέτωπο.</p>
+      <div class="event-tags"><span class="tag mil">Στρατιωτικό</span><span class="tag geo">Υποδομές</span></div>
+    </article>
+    <article class="event-card" data-open="gaza">
+      <div class="event-header">
+        <div class="event-date">17 ΑΥΓ · ΓΑΖΑ</div>
+        <div class="event-urgency urgency-high">ΥΨΗΛΟ</div>
+      </div>
+      <h3 class="event-title">Γάζα · η Ουάσιγκτον συγκρούεται με τον εταίρο της</h3>
+      <p class="event-brief">Ο Κούσνερ συναντήθηκε με Χαμάς στο Κάιρο και στη συνέχεια με τον Νετανιάχου. Η αμερικανική πρόταση προσκρούει σε ισραηλινές απορρίψεις.</p>
+      <div class="event-tags"><span class="tag geo">Διπλωματικό</span><span class="tag mil">Πολιτικό</span></div>
+    </article>
+    <article class="event-card" data-open="turkey">
+      <div class="event-header">
+        <div class="event-date">13–14 ΑΥΓ · ΤΟΥΡΚΙΑ</div>
+        <div class="event-urgency urgency-high">ΥΨΗΛΟ</div>
+      </div>
+      <h3 class="event-title">Τουρκία · ταυτόχρονη κίνηση σε τρία κέντρα</h3>
+      <p class="event-brief">Η επίσκεψη Φιντάν στην Αίγυπτο ακολούθησε επαφές σε Λιβύη και την αμυντική συμφωνία με Σαουδική Αραβία–Πακιστάν. Η Άγκυρα λειτουργεί ως κόμβος πολλαπλών σχέσεων.</p>
+      <div class="event-tags"><span class="tag geo">Διπλωματικό</span><span class="tag econ">Ενεργειακό</span></div>
+    </article>
+    <article class="event-card" data-open="syria">
+      <div class="event-header">
+        <div class="event-date">9–10 ΑΥΓ · ΣΥΡΙΑ</div>
+        <div class="event-urgency urgency-elevated">ΑΝΕΒΑΣΜΕΝΟ</div>
+      </div>
+      <h3 class="event-title">Ρωσία–Συρία · διατήρηση αποτυπώματος</h3>
+      <p class="event-brief">Συμφωνία για μετατροπή των ρωσικών βάσεων σε Ταρτούς και Χμάιμιμ σε «κέντρα κοινής εκπαιδευσης». Η Μόσχα δεν εγκαταλείπει τη Μεσόγειο παρά την αλλαγή καθεστώτος.</p>
+      <div class="event-tags"><span class="tag mil">Στρατιωτικό</span><span class="tag geo">Αν. Μεσόγειος</span></div>
+    </article>
+    <article class="event-card" data-open="china">
+      <div class="event-header">
+        <div class="event-date">14 ΑΥΓ · ΚΙΝΑ</div>
+        <div class="event-urgency urgency-elevated">ΑΝΕΒΑΣΜΕΝΟ</div>
+      </div>
+      <h3 class="event-title">Κίνα · γεωοικονομική διαχείριση ρευστότητας</h3>
+      <p class="event-brief">Η PBOC ανακοίνωσε πράξεις reverse repo για ενίσχυση τραπεζικής ρευστότητας. Η οικονομική ισχύς λειτουργεί ως αυτόνομο στρατηγικό εργαλείο, χωρίς άμεση σύγκρουση.</p>
+      <div class="event-tags"><span class="tag econ">Νομισματικό</span><span class="tag geo">Γεωοικονομία</span></div>
+    </article>
+  </div>
+</section>
+
+<!-- Pressure Gauges -->
+<section class="section reveal">
+  <div class="section-label">Μέτρηση στρατηγικής πίεσης</div>
+  <h2 class="section-title">Πέντε άξονες, τρία μέτωπα</h2>
+  <p class="section-sub">Συγκριτική αναλυτική κωδικοποίηση (κλίμακα 1–5) σε πέντε διαστάσεις πίεσης. Τα σκορ δεν αποτελούν επίσημους δείκτες αλλά βοηθούν τη συγκριτική ανάγνωση του χάρτη.</p>
+  <div class="gauges-grid">
+    <div class="gauge-card" data-gauge='{"name":"Στρατιωτική πίεση","sub":"Στρατιωτικές επιχειρήσεις, κλιμάκωση","val":4.5,"color":"var(--accent)"}'></div>
+    <div class="gauge-card" data-gauge='{"name":"Ενεργειακή πίεση","sub":"Τιμές, διαδρομές, ασφάλιστρα","val":4.7,"color":"var(--amber)"}'></div>
+    <div class="gauge-card" data-gauge='{"name":"Εφοδιαστική πίεση","sub":"Εμπόριο, λιμάνια, διαδρόμοι","val":4.3,"color":"var(--cyan)"}'></div>
+    <div class="gauge-card" data-gauge='{"name":"Διπλωματική κινητικότητα","sub":"Επαφές, συμφωνίες, διαμεσολάβηση","val":4.6,"color":"var(--violet)"}'></div>
+    <div class="gauge-card" data-gauge='{"name":"Στρατηγική διάχυση","sub":"Επιπτώσεις εκτός περιοχής","val":4.5,"color":"var(--accent2)"}'></div>
+    <div class="gauge-card" data-gauge='{"name":"Ανοχή σε κόστος","sub":"Πολιτική/οικονομική αντοχή","val":3.8,"color":"var(--green)"}'></div>
+  </div>
+</section>
+
+<!-- Matrix -->
+<section class="section reveal">
+  <div class="section-label">Πίνακας συγκριτικής πίεσης</div>
+  <h2 class="section-title">Πού εντοπίζεται η μεγαλύτερη ένταση;</h2>
+  <p class="section-sub">Κλικ σε κάθε κελί για αναλυτική εξήγηση του σκορ. Η κωδικοποίηση βασίζεται σε συχνότητα, γεωγραφικό εύρος και διασύνδεση με άλλους τομείς.</p>
+  <div class="panel" style="padding:28px">
+    <div class="panel-glow"></div>
+    <div class="matrix-wrap">
+      <table id="heatTable">
+        <thead><tr><th>Άξονας</th><th>Ορμούζ</th><th>Ουκρανία</th><th>Γάζα</th><th>Τουρκία / Αν. Μεσ.</th><th>Κίνα / παγκ. οικονομία</th></tr></thead>
+        <tbody>
+          <tr><td>Στρατιωτική πίεση</td><td><button class="matrix-btn level-5" data-matrix="Ορμούζ|Στρατιωτική πίεση|5">5</button></td><td><button class="matrix-btn level-5" data-matrix="Ουκρανία|Στρατιωτική πίεση|5">5</button></td><td><button class="matrix-btn level-4" data-matrix="Γάζα|Στρατιωτική πίεση|4">4</button></td><td><button class="matrix-btn level-3" data-matrix="Τουρκία / Αν. Μεσ.|Στρατιωτική πίεση|3">3</button></td><td><button class="matrix-btn level-2" data-matrix="Κίνα / παγκ. οικονομία|Στρατιωτική πίεση|2">2</button></td></tr>
+          <tr><td>Ενεργειακή πίεση</td><td><button class="matrix-btn level-5" data-matrix="Ορμούζ|Ενεργειακή πίεση|5">5</button></td><td><button class="matrix-btn level-4" data-matrix="Ουκρανία|Ενεργειακή πίεση|4">4</button></td><td><button class="matrix-btn level-2" data-matrix="Γάζα|Ενεργειακή πίεση|2">2</button></td><td><button class="matrix-btn level-4" data-matrix="Τουρκία / Αν. Μεσ.|Ενεργειακή πίεση|4">4</button></td><td><button class="matrix-btn level-3" data-matrix="Κίνα / παγκ. οικονομία|Ενεργειακή πίεση|3">3</button></td></tr>
+          <tr><td>Εφοδιαστική πίεση</td><td><button class="matrix-btn level-5" data-matrix="Ορμούζ|Εφοδιαστική πίεση|5">5</button></td><td><button class="matrix-btn level-5" data-matrix="Ουκρανία|Εφοδιαστική πίεση|5">5</button></td><td><button class="matrix-btn level-2" data-matrix="Γάζα|Εφοδιαστική πίεση|2">2</button></td><td><button class="matrix-btn level-3" data-matrix="Τουρκία / Αν. Μεσ.|Εφοδιαστική πίεση|3">3</button></td><td><button class="matrix-btn level-4" data-matrix="Κίνα / παγκ. οικονομία|Εφοδιαστική πίεση|4">4</button></td></tr>
+          <tr><td>Διπλωματική κινητικότητα</td><td><button class="matrix-btn level-4" data-matrix="Ορμούζ|Διπλωματική κινητικότητα|4">4</button></td><td><button class="matrix-btn level-4" data-matrix="Ουκρανία|Διπλωματική κινητικότητα|4">4</button></td><td><button class="matrix-btn level-5" data-matrix="Γάζα|Διπλωματική κινητικότητα|5">5</button></td><td><button class="matrix-btn level-5" data-matrix="Τουρκία / Αν. Μεσ.|Διπλωματική κινητικότητα|5">5</button></td><td><button class="matrix-btn level-2" data-matrix="Κίνα / παγκ. οικονομία|Διπλωματική κινητικότητα|2">2</button></td></tr>
+          <tr><td>Στρατηγική διάχυση</td><td><button class="matrix-btn level-5" data-matrix="Ορμούζ|Στρατηγική διάχυση|5">5</button></td><td><button class="matrix-btn level-4" data-matrix="Ουκρανία|Στρατηγική διάχυση|4">4</button></td><td><button class="matrix-btn level-3" data-matrix="Γάζα|Στρατηγική διάχυση|3">3</button></td><td><button class="matrix-btn level-4" data-matrix="Τουρκία / Αν. Μεσ.|Στρατηγική διάχυση|4">4</button></td><td><button class="matrix-btn level-5" data-matrix="Κίνα / παγκ. οικονομία|Στρατηγική διάχυση|5">5</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:20px;font-size:11px;color:var(--muted);font-family:-apple-system,sans-serif">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(27,122,62,0.3);vertical-align:middle;margin-right:5px"></span>Χαμηλή (1)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(15,84,128,0.3);vertical-align:middle;margin-right:5px"></span>Μέτρια (2)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(184,93,0,0.3);vertical-align:middle;margin-right:5px"></span>Ανεβασμένη (3)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(205,44,44,0.35);vertical-align:middle;margin-right:5px"></span>Υψηλή (4)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(179,27,27,0.45);vertical-align:middle;margin-right:5px"></span>Κρίσιμη (5)</span>
+    </div>
+  </div>
+</section>
+
+<!-- Network -->
+<section class="section reveal">
+  <div class="section-label">Δίκτυο περιφερειακών σχέσεων</div>
+  <h2 class="section-title">Προς μια νέα αρχιτεκτονική ασφαλείας στη Μέση Ανατολή</h2>
+  <p class="section-sub">Η συμφωνία Τουρκίας–Σαουδικής Αραβίας–Πακιστάν και η ταυτόχρονη κίνηση της Άγκυρας προς Κάιρο και Τρίπολη συγκροτούν ένα νέο περιφερειακό πλέγμα. Hover στους κόμβους για τις σχέσεις.</p>
+  <div class="panel">
+    <div class="panel-glow"></div>
+    <div class="network-wrap">
+      <div class="network-header" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px;font-family:-apple-system,sans-serif">Το περιφερειακό πλέγμα ασφαλείας</div>
+          <div style="font-size:14px;color:var(--ink2);font-family:'Georgia',serif">10–17 Αυγούστου 2026 · ενδεικτική τοπολογία σχέσεων</div>
+        </div>
+        
+      </div>
+      <svg class="network-svg" viewBox="0 0 900 480" id="networkSvg"></svg>
+      <div class="network-legend" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line);font-family:-apple-system,sans-serif">
+        <div>
+          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Επεξήγηση κόμβων</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--ink2)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:50%;background:#5c39a2"></span>Κόμβος πυρήνας (Τουρκία)</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:50%;background:#b85d00"></span>Περιφερειακός κόμβος</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:50%;background:#1b7a3e"></span>Νέα αμυντική συμφωνία</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:50%;background:#0f5480"></span>Διαβουλεύσεις / συντονισμός</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:50%;background:#b31b1b"></span>Εξωτερικός παράγων πίεσης</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Τύποι σχέσεων</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--ink2)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:2px;background:#5c39a2"></span>Αμυντική συμφωνία</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:2px;background:#0f5480"></span>Στρατηγική σύμπραξη</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:2px;background:#b85d00"></span>Διπλωματικές επαφές</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:2px;border-top:2px dashed #666666"></span>Παραδοσιακή ομπρέλα (ΗΠΑ)</div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:2px;border-top:2px dashed #b31b1b"></span>Ανταγωνιστική σχέση</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<div class="section reveal">
+  <div class="lower-grid">
+    <section class="panel timeline-section">
+      <div class="panel-glow"></div>
+      <div class="section-label">Χρονολόγιο</div>
+      <h2 class="section-title" style="font-size:26px">10 → 17 Αυγούστου</h2>
+      <div class="tl-list">
+        <div class="tl-item">
+          <div class="date">10 Αυγούστου</div>
+          <h3>Ιράν · διατήρηση πίεσης στο Ορμούζ</h3>
+          <p>Το Στενό παραμένει το κεντρικό σημείο πίεσης της σύγκρουσης ΗΠΑ–Ιράν. Η κίνηση υποχωρεί δραστικά.</p>
+        </div>
+        <div class="tl-item">
+          <div class="date">12 Αυγούστου</div>
+          <h3>ΗΠΑ · στροφή στην οικονομική ασφυξία</h3>
+          <p>Η Ουάσιγκτον επιχειρεί μεταφορά βάρους από τη στρατιωτική πίεση στον οικονομικό αποκλεισμό της Τεχεράνης.</p>
+        </div>
+        <div class="tl-item">
+          <div class="date">13–14 Αυγούστου</div>
+          <h3>Τουρκία → Αίγυπτος · Φιντάν στο Κάιρο</h3>
+          <p>Ατζέντα άμυνας, ενέργειας, εμπορίου και περιφερειακών κρίσεων. Επαφές για Λιβύη και Γάζα.</p>
+        </div>
+        <div class="tl-item">
+          <div class="date">14 Αυγούστου</div>
+          <h3>Επίθεση σε πλοίο ADNOC · Κίνα reverse repo</h3>
+          <p>Παράλληλες εξελίξεις: ναυτιλιακή κλιμάκωση στον Κόλπο και παρέμβαση ρευστότητας από την PBOC.</p>
+        </div>
+        <div class="tl-item">
+          <div class="date">17 Αυγούστου</div>
+          <h3>Κούσνερ · Κάιρο → Ιερουσαλήμ</h3>
+          <p>Ο Αμερικανός διαμεσολαβητής συναντά Χαμάς και μετά Νετανιάχου. Η αμερικανική πρόταση προσκρούει σε ισραηλινές απορρίψεις.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel watchlist">
+      <div class="panel-glow"></div>
+      <div class="section-label">Τι παρακολουθούμε</div>
+      <h2 class="section-title" style="font-size:26px">Τέσσερις μεταβλητές για την επόμενη φάση</h2>
+      <div style="margin-top:20px">
+        <div class="watch-item">
+          <div class="watch-head">
+            <div class="watch-num">01</div>
+            <div class="watch-content">
+              <h3>Ναυσιπλοΐα στο Ορμούζ</h3>
+              <p>Επανέναρξη ή μονιμοποίηση αποκλεισμού; Το κρίσιμο δεν είναι μόνο το άνοιγμα, αλλά η αποκατάσταση εμπιστοσύνης ασφαλιστικών και ναυτιλιακών.</p>
+            </div>
+          </div>
+        </div>
+        <div class="watch-item">
+          <div class="watch-head">
+            <div class="watch-num">02</div>
+            <div class="watch-content">
+              <h3>Βάθος του πολέμου υποδομών στην Ουκρανία</h3>
+              <p>Η κλιμάκωση σε ενεργειακές εγκαταστάσεις, γέφυρες, λιμάνια και εναλλακτικούς διαδρόμους αυξάνει το οικονομικό κόστος χωρίς να αλλάζει το μέτωπο.</p>
+            </div>
+          </div>
+        </div>
+        <div class="watch-item">
+          <div class="watch-head">
+            <div class="watch-num">03</div>
+            <div class="watch-content">
+              <h3>Θεσμική εδραίωση περιφερειακών σχημάτων</h3>
+              <p>Εάν οι νέες σχέσεις Τουρκίας–Αιγύπτου–Σ. Αραβίας–Πακιστάν αποκτήσουν θεσμικό χαρακτήρα, θα σηματοδοτήσουν μετάβαση σε σύστημα πολλαπλών εγγυήσεων.</p>
+            </div>
+          </div>
+        </div>
+        <div class="watch-item">
+          <div class="watch-head">
+            <div class="watch-num">04</div>
+            <div class="watch-content">
+              <h3>Γεωπολιτικός κίνδυνος & οικονομική αντοχή</h3>
+              <p>Η διάρκεια των κρίσεων θα κριθεί από την ικανότητα κρατών να απορροφούν κόστος, να αλλάζουν διαδρομές και να διατηρούν πρόσβαση σε ενέργεια και χρηματοδότηση.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Summary -->
+<section class="section reveal">
+  <div class="panel summary-section">
+    <div class="panel-glow"></div>
+    <div class="section-label">Συνολική εκτίμηση</div>
+    <h2 class="section-title">Πού βρίσκεται το διεθνές σύστημα;</h2>
+    <div class="summary-grid">
+      <div class="summary-text">
+        <p><strong>Η βασική μεταβολή δεν είναι η εμφάνιση ενός νέου κέντρου ισχύος.</strong> Είναι ότι στρατιωτική ισχύς, οικονομική πίεση και περιφερειακή διπλωματία <span class="highlight">συναποτελούν ψηφίδες μιας ενιαίας στρατηγικής</span>.</p>
+        <p>Οι Ηνωμένες Πολιτείες διατηρούν το μεγαλύτερο συνολικό απόθεμα ισχύος — στρατιωτικό, χρηματοπιστωτικό, τεχνολογικό — αλλά η χρήση του σε πολλαπλά μέτωπα παράγει κόστος και περιορισμούς. Η στρατιωτική υπεροχή <strong>δεν μεταφράζεται αυτόματα σε πολιτικό αποτέλεσμα</strong>.</p>
+        <p>Η Ρωσία μετατρέπει τη γεωγραφία της Ευρασίας σε στρατηγικό βάθος. Το Ιράν αξιοποιεί στενούς θαλάσσιους κόμβους ως πολλαπλασιαστές ισχύος. Η Τουρκία επενδύει σε παράλληλες περιφερειακές σχέσεις. Η Κίνα χρησιμοποιεί την οικονομική βαρύτητα ως αυτόνομο εργαλείο. Τα κράτη του Κόλπου επιδιώκουν <span class="highlight">στρατηγική ασφάλεια</span> χωρίς να εγκαταλείπουν την Ουάσιγκτον.</p>
+        <p><strong>Για την Ελλάδα</strong>, η Ανατολική Μεσόγειος πρέπει να αντιμετωπίζεται ως κόμβος μεταξύ ενεργειακών, θαλάσσιων, αμυντικών και εμπορικών δικτύων. Η στρατηγική αξία της χώρας δεν θα κριθεί μόνο από τις διμερείς ισορροπίες, αλλά από τη θέση της μέσα σε αυτά τα δίκτυα.</p>
+      </div>
+      <div class="summary-visual">
+        <h4 style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;font-family:-apple-system,sans-serif">Κατανομή ισχύος · αναλυτική ανάγνωση</h4>
+        <div class="power-node">
+          <div class="power-icon" style="background:rgba(15,84,128,0.12);color:var(--cyan)">US</div>
+          <div class="power-content">
+            <div class="power-name">Ηνωμένες Πολιτείες</div>
+            <div class="power-role">Μεγαλύτερη μεμονωμένη ισχύς · αβέβαιη μετατροπή σε πολιτικό αποτέλεσμα</div>
+            <div class="power-bar"><div class="power-fill" data-width="92" style="background:linear-gradient(90deg,var(--cyan),var(--violet));width:0"></div></div>
+          </div>
+        </div>
+        <div class="power-node">
+          <div class="power-icon" style="background:rgba(184,93,0,0.12);color:var(--amber)">CN</div>
+          <div class="power-content">
+            <div class="power-name">Κίνα</div>
+            <div class="power-role">Κύριος ανταγωνιστής · οικονομική & τεχνολογική διάσταση</div>
+            <div class="power-bar"><div class="power-fill" data-width="84" style="background:linear-gradient(90deg,var(--amber),var(--gold));width:0"></div></div>
+          </div>
+        </div>
+        <div class="power-node">
+          <div class="power-icon" style="background:rgba(179,27,27,0.12);color:var(--accent)">RU</div>
+          <div class="power-content">
+            <div class="power-name">Ρωσία</div>
+            <div class="power-role">Στρατιωτική & ενεργειακή ισχύς · αντοχή σε κυρώσεις</div>
+            <div class="power-bar"><div class="power-fill" data-width="68" style="background:linear-gradient(90deg,var(--accent),var(--accent2));width:0"></div></div>
+          </div>
+        </div>
+        <div class="power-node">
+          <div class="power-icon" style="background:rgba(27,122,62,0.12);color:var(--green)">IR</div>
+          <div class="power-content">
+            <div class="power-name">Ιράν</div>
+            <div class="power-role">Ασύμμετρο κόστος μέσω γεωγραφίας · ανοχή σε παρατεταμένη πίεση</div>
+            <div class="power-bar"><div class="power-fill" data-width="55" style="background:linear-gradient(90deg,var(--green),var(--green2));width:0"></div></div>
+          </div>
+        </div>
+        <div class="power-node">
+          <div class="power-icon" style="background:rgba(92,57,162,0.12);color:var(--violet)">TR</div>
+          <div class="power-content">
+            <div class="power-name">Τουρκία</div>
+            <div class="power-role">Κόμβος πολλαπλών περιφερειακών σχέσεων</div>
+            <div class="power-bar"><div class="power-fill" data-width="62" style="background:linear-gradient(90deg,var(--violet),var(--cyan));width:0"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="method-note">
+      <div><strong>Μεθοδολογική σημείωση:</strong> Οι αριθμητικές τιμές, τα σκορ πίεσης και τα ποσοστά ισχύος αποτελούν εκτίμηση των ανοικτών πηγών που χρησιμοποιήθηκαν, όχι μετρήσεις επίσημων διεθνών οργανισμών. </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-inner">
+<div>iEp widgets © iEpikaira Analytics · SITREP 10 - 17 AUG 2026</div>
+</div>
+</footer>
+
+<div class="modal-back" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Κλείσιμο">×</button>
+    <div class="modal-tag" id="modalTag"></div>
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="modal-sources" id="modalSources"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+// ============== Particles ==============
+(function(){
+  const canvas=document.getElementById('particles');
+  const ctx=canvas.getContext('2d');
+  let w,h,particles=[];
+  function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight}
+  resize();addEventListener('resize',resize);
+  class P{
+    constructor(){this.x=Math.random()*w;this.y=Math.random()*h;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.r=Math.random()*1.5+.5;this.a=Math.random()*.3+.1}
+    update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>w)this.vx*=-1;if(this.y<0||this.y>h)this.vy*=-1}
+    draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(120,120,120,${this.a})`;ctx.fill()}
+  }
+  for(let i=0;i<60;i++)particles.push(new P());
+  function loop(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{p.update();p.draw()});
+    // connect close particles
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(120,120,120,${(1-d/120)*.12})`;ctx.lineWidth=.5;ctx.stroke()}
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ============== Map ==============
+const map=L.map('map',{zoomControl:true,scrollWheelZoom:true,worldCopyJump:true,attributionControl:false}).setView([28,35],3);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',{
+  maxZoom:18,subdomains:'abcd',
+  attribution:'© OpenStreetMap, © CARTO'
+}).addTo(map);
+
+const groups={all:L.layerGroup(),hormuz:L.layerGroup(),ukraine:L.layerGroup(),gaza:L.layerGroup(),turkey:L.layerGroup(),global:L.layerGroup()};
+Object.values(groups).forEach(g=>g.addTo(map));
+
+function marker(lat,lon,name,desc,group,kind='node',color='cyan'){
+  const colorMap={accent:'#b31b1b',cyan:'#0f5480',amber:'#b85d00',violet:'#5c39a2'};
+  const c=colorMap[color]||colorMap.cyan;
+  const icon=L.divIcon({
+    className:'',
+    html:`<div class="pulse-marker ${color==='accent'?'':''}" style="background:${c};box-shadow:0 0 0 0 ${c}80;color:${c}"></div>`,
+    iconSize:[20,20],iconAnchor:[10,10]
+  });
+  const m=L.marker([lat,lon],{icon}).bindPopup(`<strong>${name}</strong><div style="font-size:12px;color:#2b2b2b;margin-top:4px">${desc}</div>`);
+  m.addTo(groups[group]);
+  if(group!=='all')m.addTo(groups.all);
+  return m;
+}
+
+// Hormuz
+marker(27.0,56.3,'Στενό Ορμούζ','Κρίσιμος θαλάσσιος κόμβος · 20% της παγκόσμιας διακίνησης πετρελαίου/LNG','hormuz','critical','accent');
+marker(28.97,50.84,'Μπαντάρ Αμπάς','Κύριος ιρανικός λιμένας Περσικού Κόλπου','hormuz','node','amber');
+marker(25.20,55.27,'Ντουμπάι','Κόμβος λιμενικής & εμπορικής δραστηριότητας','hormuz','node','cyan');
+marker(24.45,54.38,'Αμπού Ντάμπι','Κόμβος ενέργειας & ναυτιλίας · έδρα ADNOC','hormuz','node','cyan');
+marker(24.68,46.72,'Ριάντ','Περιφερειακό κέντρο ισχύος Σαουδικής Αραβίας','hormuz','node','violet');
+
+// Ukraine
+marker(50.45,30.52,'Κίεβο','Κέντρο πολιτικοστρατηγικής λήψης αποφάσεων Ουκρανίας','ukraine','critical','accent');
+marker(46.48,30.73,'Οδησσός','Κρίσιμος λιμενικός κόμβος · άξονας προς Μολδαβία/Ρουμανία','ukraine','critical','amber');
+marker(44.93,34.10,'Κριμαία','Γεωστρατηγικός χώρος ελέγχου Μαύρης Θάλασσας','ukraine','node','violet');
+marker(55.75,37.62,'Μόσχα','Κέντρο ρωσικής πολιτικοστρατιωτικής λήψης αποφάσεων','ukraine','node','violet');
+marker(55.79,49.12,'Ταταρστάν','Περιοχή βάθους 1.100 χλμ. · ενεργειακές & βιομηχανικές εγκαταστάσεις','ukraine','critical','accent');
+marker(44.72,26.63,'Βουκουρέστι','Κόμβος εναλλακτικής χερσαίας πρόσβασης Ουκρανίας στην ΕΕ','ukraine','node','cyan');
+
+// Gaza
+marker(31.50,34.47,'Γάζα','Κέντρο πολιτικοστρατιωτικής κρίσης · αμερικανική διαμεσολάβηση','gaza','critical','accent');
+marker(31.77,35.21,'Ιερουσαλήμ','Κέντρο ισραηλινής πολιτικής λήψης αποφάσεων','gaza','node','cyan');
+marker(30.04,31.24,'Κάιρο','Κόμβος επαφών · Χαμάς & αμερικανική διαμεσολάβηση','gaza','node','violet');
+
+// Turkey
+marker(39.93,32.86,'Άγκυρα','Κέντρο τουρκικής εξωτερικής πολιτικής · πολλαπλές περιφερειακές κινήσεις','turkey','critical','accent');
+marker(32.89,13.19,'Τρίπολη','Κόμβος τουρκολιβυκής στρατηγικής σχέσης','turkey','node','amber');
+marker(31.20,29.92,'Αλεξάνδρεια','Σημείο αναφοράς αιγυπτιακής μεσογειακής γεωγραφίας','turkey','node','cyan');
+marker(41.01,28.98,'Κωνσταντινούπολη','Κόμβος Μαύρης Θάλασσας–Μεσογείου · Βοσπόρου','turkey','node','cyan');
+
+// Global
+marker(34.89,35.89,'Ταρτούς','Ρωσική ναυτική εγκατάσταση · νέα συμφωνία «κοινής εκπαίδευσης»','global','critical','violet');
+marker(35.44,35.95,'Χμάιμιμ','Ρωσική αεροπορική εγκατάσταση · διατήρηση αποτυπώματος','global','critical','violet');
+marker(39.90,116.40,'Πεκίνο','Κέντρο κινεζικής οικονομικής & στρατηγικής πολιτικής · PBOC','global','node','amber');
+marker(50.85,4.35,'Βρυξέλλες','Κέντρο λήψης αποφάσεων ΕΕ · κυρώσεις κατά Ρωσίας','global','node','cyan');
+marker(38.90,-77.04,'Ουάσιγκτον','Κέντρο αμερικανικής στρατηγικής · οικονομική πίεση, Γάζα','global','critical','accent');
+marker(33.69,73.06,'Ισλαμαμπάντ','Πακιστανικός κόμβος · τριμερής αμυντική συμφωνία','global','node','violet');
+
+// Lines (analytical corridors)
+function line(coords,group,color='#b31b1b',dash='8 6',weight=2,opacity=.75){
+  const l=L.polyline(coords,{color,weight,dashArray:dash,opacity,fill:false});
+  l.bindTooltip('<div style="font-size:11px">Αναλυτική απεικόνιση σχέσης / διαδρόμου</div>',{sticky:true,direction:'top'});
+  l.addTo(groups[group]);
+  if(group!=='all')l.addTo(groups.all);
+  return l;
+}
+line([[27,56.3],[25.2,55.27],[24.45,54.38]],'hormuz','#b31b1b','10 6',2.5,.8);
+line([[46.48,30.73],[45.75,29.9],[44.72,26.63]],'ukraine','#0f5480','8 5',2.5,.75);
+line([[50.45,30.52],[53,34],[55.75,37.62],[55.79,49.12]],'ukraine','#0f5480','3 8',2,.7);
+line([[31.5,34.47],[31.77,35.21],[30.04,31.24]],'gaza','#b31b1b','7 5',2.5,.8);
+line([[39.93,32.86],[35.5,23],[32.89,13.19]],'turkey','#b85d00','8 5',2.5,.8);
+line([[39.93,32.86],[31.2,29.92],[30.04,31.24]],'turkey','#b85d00','6 4',2,.75);
+line([[39.93,32.86],[33,45],[24.68,46.72]],'turkey','#5c39a2','4 8',2,.7);
+line([[24.68,46.72],[29,58],[33.69,73.06]],'turkey','#5c39a2','3 7',1.5,.65);
+line([[39.9,116.4],[45,80],[33.69,73.06]],'global','#666666','2 10',1.5,.5);
+line([[39.9,116.4],[50,80],[55.75,37.62]],'global','#666666','2 10',1.5,.5);
+line([[55.75,37.62],[45,40],[34.89,35.89]],'global','#5c39a2','4 8',2,.65);
+
+// Influence zones
+L.circle([27,56.3],{radius:420000,color:'#b31b1b',fillColor:'#b31b1b',fillOpacity:.08,weight:1,dashArray:'5 6'}).addTo(groups.hormuz).addTo(groups.all);
+L.circle([46.48,30.73],{radius:450000,color:'#0f5480',fillColor:'#0f5480',fillOpacity:.07,weight:1,dashArray:'5 6'}).addTo(groups.ukraine).addTo(groups.all);
+L.circle([31.5,34.47],{radius:280000,color:'#b31b1b',fillColor:'#b31b1b',fillOpacity:.08,weight:1,dashArray:'5 6'}).addTo(groups.gaza).addTo(groups.all);
+L.circle([39.93,32.86],{radius:500000,color:'#b85d00',fillColor:'#b85d00',fillOpacity:.06,weight:1,dashArray:'5 6'}).addTo(groups.turkey).addTo(groups.all);
+
+function setLayer(name){
+  Object.values(groups).forEach(g=>map.removeLayer(g));
+  if(name==='all'){groups.all.addTo(map);return}
+  groups[name].addTo(map);
+}
+document.querySelectorAll('.map-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.map-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  setLayer(btn.dataset.layer);
+}));
+setTimeout(()=>map.invalidateSize(),300);
+
+// ============== Gauges ==============
+function buildGauge(el){
+  const data=JSON.parse(el.dataset.gauge);
+  const pct=data.val/5;
+  const r=62,cx=75,cy=80,circ=2*Math.PI*r;
+  const arcLen=circ*0.75;
+  const offset=arcLen*(1-pct);
+  el.innerHTML=`
+    <div class="gauge-head">
+      <div>
+        <div class="gauge-title">${data.name}</div>
+        <div class="gauge-sub">${data.sub}</div>
+      </div>
+      <div class="gauge-badge" style="background:${data.color}15;color:${data.color};border:1px solid ${data.color}40">ΕΒΔ 33</div>
+    </div>
+    <svg class="gauge-svg" width="150" height="130" viewBox="0 0 150 130">
+      <circle class="gauge-track" cx="${cx}" cy="${cy}" r="${r}" stroke-width="10" fill="none"
+        stroke-dasharray="${arcLen} ${circ}" transform="rotate(135 ${cx} ${cy})" stroke-linecap="round"/>
+      <circle class="gauge-fill" cx="${cx}" cy="${cy}" r="${r}" stroke-width="10" fill="none"
+        stroke="${data.color}" stroke-dasharray="${arcLen} ${circ}" stroke-dashoffset="${arcLen}"
+        transform="rotate(135 ${cx} ${cy})" stroke-linecap="round"
+        data-target="${offset}"/>
+    </svg>
+    <div class="gauge-value" style="color:${data.color}">${data.val.toFixed(1)}<span style="font-size:14px;color:var(--muted);font-weight:400">/5</span></div>
+    <div class="gauge-label">Μέση πίεση 5 αξόνων</div>
+  `;
+}
+document.querySelectorAll('[data-gauge]').forEach(buildGauge);
+
+// Animate gauge fills
+setTimeout(()=>{
+  document.querySelectorAll('.gauge-fill').forEach(el=>{
+    el.style.strokeDashoffset=el.dataset.target;
+  });
+},400);
+
+// ============== Enhanced Network Graph ==============
+(function(){
+  const svg=document.getElementById('networkSvg');
+  if(!svg)return;
+  const W=900,H=480;
+  
+  // Nodes with categories and relationship labels
+  const nodes=[
+    {id:'TR',x:450,y:150,name:'Τουρκία',color:'#5c39a2',r:32,desc:'Κόμβος πυρήνας · πολλαπλές σχέσεις',cat:'core'},
+    {id:'EG',x:220,y:280,name:'Αίγυπτος',color:'#b85d00',r:24,desc:'Ενέργεια, Λιβύη, Γάζα',cat:'regional'},
+    {id:'SA',x:680,y:280,name:'Σ. Αραβία',color:'#1b7a3e',r:24,desc:'Αμυντική συμφωνία',cat:'agreement'},
+    {id:'PK',x:820,y:400,name:'Πακιστάν',color:'#0f5480',r:20,desc:'Τριμερής άξονας',cat:'agreement'},
+    {id:'LY',x:80,y:200,name:'Λιβύη',color:'#cd2c2c',r:18,desc:'Στρατηγική σχέση',cat:'regional'},
+    {id:'IR',x:450,y:430,name:'Ιράν',color:'#b31b1b',r:22,desc:'Εξωτερικός παράγων',cat:'external'},
+    {id:'IL',x:150,y:400,name:'Ισραήλ',color:'#186fa6',r:18,desc:'Γάζα / αμερικανική επιρροή',cat:'external'},
+    {id:'US',x:680,y:90,name:'ΗΠΑ',color:'#0f5480',r:26,desc:'Παραδοσιακή ομπρέλα',cat:'external'},
+    {id:'QA',x:300,y:400,name:'Κατάρ',color:'#289e52',r:14,desc:'Κανάλι επικοινωνίας',cat:'regional'}
+  ];
+  
+  // Links with explicit relationship labels
+  const links=[
+    {a:'TR',b:'EG',label:'ΦΙΝΤΑΝ 13–14/08',color:'#b85d00',dash:'0',w:2.5},
+    {a:'TR',b:'LY',label:'ΕΠΑΦΕΣ ΣΤΗΝ ΤΡΙΠΟΛΗ',color:'#b85d00',dash:'0',w:2.5},
+    {a:'TR',b:'SA',label:'ΑΜΥΝΤΙΚΗ ΣΥΜΦΩΝΙΑ',color:'#5c39a2',dash:'0',w:3},
+    {a:'TR',b:'PK',label:'ΣΤΡΑΤΗΓΙΚΗ ΣΥΜΠΡΑΞΗ',color:'#5c39a2',dash:'0',w:2.5},
+    {a:'SA',b:'PK',label:'ΤΡΙΜΕΡΗΣ ΑΞΟΝΑΣ',color:'#1b7a3e',dash:'0',w:3},
+    {a:'EG',b:'LY',label:'ΣΥΝΤΟΝΙΣΜΟΣ',color:'#0f5480',dash:'4 4',w:1.8},
+    {a:'EG',b:'IL',label:'ΕΙΡΗΝΗ 1979',color:'#0f5480',dash:'4 4',w:1.5},
+    {a:'EG',b:'QA',label:'ΔΙΑΜΕΣΟΛΑΒΗΣΗ',color:'#0f5480',dash:'4 4',w:1.5},
+    {a:'US',b:'SA',label:'ΟΜΠΡΕΛΑ',color:'#666666',dash:'5 6',w:1.8},
+    {a:'US',b:'EG',label:'ΟΜΠΡΕΛΑ',color:'#666666',dash:'5 6',w:1.5},
+    {a:'US',b:'IL',label:'ΣΤΡΑΤΗΓΙΚΗ ΣΥΜΜΑΧΙΑ',color:'#666666',dash:'5 6',w:2.2},
+    {a:'US',b:'TR',label:'ΝΑΤΟ (ΤΡΙΓΜΟΙ)',color:'#666666',dash:'5 6',w:1.2},
+    {a:'IR',b:'QA',label:'ΚΑΝΑΛΙ',color:'#b31b1b',dash:'3 5',w:1.5},
+    {a:'IR',b:'SA',label:'ΑΝΤΑΓΩΝΙΣΜΟΣ',color:'#b31b1b',dash:'3 5',w:1.8},
+    {a:'IR',b:'PK',label:'ΣΥΝΕΡΓΑΣΙΑ',color:'#b31b1b',dash:'3 5',w:1.5}
+  ];
+  
+  const byId=Object.fromEntries(nodes.map(n=>[n.id,n]));
+  
+  // Draw links with labels
+  links.forEach(lk=>{
+    const a=byId[lk.a],b=byId[lk.b];
+    // Line
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);
+    line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);
+    line.setAttribute('stroke',lk.color);
+    line.setAttribute('class','network-link');
+    line.setAttribute('stroke-dasharray',lk.dash);
+    line.setAttribute('stroke-width',lk.w);
+    line.dataset.a=lk.a;line.dataset.b=lk.b;
+    svg.appendChild(line);
+    
+    // Label on the line
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len=Math.sqrt(dx*dx+dy*dy);
+    let angle=Math.atan2(dy,dx)*180/Math.PI;
+    if(angle>90||angle<-90)angle+=180;
+    
+    const labelG=document.createElementNS('http://www.w3.org/2000/svg','g');
+    labelG.setAttribute('transform',`translate(${mx},${my}) rotate(${angle})`);
+    labelG.setAttribute('class','link-label');
+    labelG.dataset.a=lk.a;labelG.dataset.b=lk.b;
+    labelG.style.pointerEvents='none';
+    
+    // Label background
+    const labelBg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    const textLen=lk.label.length*5.5+12;
+    labelBg.setAttribute('x',-textLen/2);
+    labelBg.setAttribute('y',-8);
+    labelBg.setAttribute('width',textLen);
+    labelBg.setAttribute('height',14);
+    labelBg.setAttribute('rx',2);
+    labelBg.setAttribute('fill','rgba(255,255,255,0.95)');
+    labelBg.setAttribute('stroke',lk.color);
+    labelBg.setAttribute('stroke-width','0.5');
+    labelBg.setAttribute('opacity','0');
+    labelG.appendChild(labelBg);
+    
+    const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('dy','3');
+    label.setAttribute('font-size','9');
+    label.setAttribute('fill',lk.color);
+    label.setAttribute('font-family','Courier New,monospace');
+    label.setAttribute('letter-spacing','.1em');
+    label.setAttribute('opacity','0');
+    label.textContent=lk.label;
+    labelG.appendChild(label);
+    
+    svg.appendChild(labelG);
+  });
+  
+  // Draw nodes
+  nodes.forEach(n=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','network-node');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    g.dataset.id=n.id;
+    
+    // Halo for core node
+    if(n.cat==='core'){
+      const halo=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      halo.setAttribute('r',n.r+12);
+      halo.setAttribute('fill','none');
+      halo.setAttribute('stroke',n.color);
+      halo.setAttribute('stroke-width','1');
+      halo.setAttribute('stroke-dasharray','2 4');
+      halo.setAttribute('opacity','0.6');
+      halo.innerHTML=`<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="30s" repeatCount="indefinite"/>`;
+      g.appendChild(halo);
+    }
+    
+    // Outer glow
+    const glow=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    glow.setAttribute('r',n.r+6);
+    glow.setAttribute('fill',n.color);
+    glow.setAttribute('fill-opacity','0.15');
+    g.appendChild(glow);
+    
+    // Main circle
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r',n.r);
+    circle.setAttribute('fill',n.color);
+    circle.setAttribute('fill-opacity','0.85');
+    circle.setAttribute('stroke','#fff');
+    circle.setAttribute('stroke-width','2');
+    g.appendChild(circle);
+    
+    // ID label
+    const idText=document.createElementNS('http://www.w3.org/2000/svg','text');
+    idText.setAttribute('text-anchor','middle');
+    idText.setAttribute('dy','4');
+    idText.setAttribute('font-weight','700');
+    idText.setAttribute('font-size',n.cat==='core'?'14':'12');
+    idText.setAttribute('fill','#fff');
+    idText.setAttribute('font-family','Courier New,monospace');
+    idText.textContent=n.id;
+    g.appendChild(idText);
+    
+    // Name label
+    const nameText=document.createElementNS('http://www.w3.org/2000/svg','text');
+    nameText.setAttribute('text-anchor','middle');
+    nameText.setAttribute('dy',n.r+16);
+    nameText.setAttribute('font-size','12');
+    nameText.setAttribute('fill','#121212');
+    nameText.setAttribute('font-weight','700');
+    nameText.setAttribute('font-family','Georgia,serif');
+    nameText.textContent=n.name;
+    g.appendChild(nameText);
+    
+    // Hover behavior: highlight connected links AND show their labels
+    g.addEventListener('mouseenter',()=>{
+      document.querySelectorAll('.network-link').forEach(l=>{
+        const connected=l.dataset.a===n.id||l.dataset.b===n.id;
+        l.classList.toggle('active',connected);
+        l.style.opacity=connected?'1':'0.1';
+      });
+      document.querySelectorAll('.link-label').forEach(lb=>{
+        const connected=lb.dataset.a===n.id||lb.dataset.b===n.id;
+        const rect=lb.querySelector('rect');
+        const txt=lb.querySelector('text');
+        if(rect&&txt){
+          rect.setAttribute('opacity',connected?'1':'0');
+          txt.setAttribute('opacity',connected?'1':'0');
+        }
+      });
+      // Dim other nodes
+      document.querySelectorAll('.network-node').forEach(node=>{
+        const nid=node.dataset.id;
+        const isConnected=links.some(l=>(l.a===n.id&&l.b===nid)||(l.b===n.id&&l.a===nid))||nid===n.id;
+        node.style.opacity=isConnected?'1':'0.25';
+      });
+    });
+    g.addEventListener('mouseleave',()=>{
+      document.querySelectorAll('.network-link').forEach(l=>{
+        l.classList.remove('active');
+        l.style.opacity='';
+      });
+      document.querySelectorAll('.link-label rect,.link-label text').forEach(el=>{
+        el.setAttribute('opacity','0');
+      });
+      document.querySelectorAll('.network-node').forEach(node=>{
+        node.style.opacity='';
+      });
+    });
+    
+    svg.appendChild(g);
+  });
+})();
+
+// ============== Counters ==============
+function animateCount(el){
+  const target=+el.dataset.count;
+  const prefix=el.querySelector('.unit')?el.querySelector('.unit').outerHTML:'';
+  let cur=0;const step=target/40;
+  const id=setInterval(()=>{
+    cur+=step;if(cur>=target){cur=target;clearInterval(id)}
+    el.innerHTML=prefix+Math.round(cur);
+  },30);
+}
+function reveal(el){
+  el.classList.add('visible');
+  el.querySelectorAll('[data-count]').forEach(animateCount);
+  el.querySelectorAll('.power-fill').forEach(f=>{f.style.width=f.dataset.width+'%'});
+}
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){reveal(e.target);io.unobserve(e.target)}});
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// ============== Modal ==============
+const data={
+  hormuz:{tag:'Στρατηγική Ανάλυση · Ορμούζ',title:'Ιράν–ΗΠΑ · το Στενό ως πολλαπλασιαστής ισχύος',body:[
+    'Η σημαντικότερη εξέλιξη της εβδομάδας ήταν η <strong>αποτυχία πλήρους επαναλειτουργίας του Στενού του Ορμούζ</strong>. Η Ουάσιγκτον επιχείρησε να μεταφέρει το βάρος από τη στρατιωτική στην οικονομική πίεση. Δημοσίευμα της Ναυτεμπορικής (12/08) περιέγραφε τη στροφή ως μετάβαση από στρατιωτική πίεση σε οικονομική «ασφυξία».',
+    'Η κρίσιμη αδυναμία: <strong>η στρατιωτική υπεροχή των ΗΠΑ δεν έχει μεταφραστεί σε πλήρη έλεγχο της θαλάσσιας κυκλοφορίας</strong>. Από 130–140 πλοία ημερησίως πριν τον πόλεμο, η κίνηση υποχώρησε σε μονοψήφιο αριθμό. Το Brent κινήθηκε κοντά στα $89 στις 17 Αυγούστου.',
+    'Η Τεχεράνη διατηρεί ανοικτά κανάλια μέσω Πακιστάν και Κατάρ, χωρίς να αποδέχεται άμεση επανέναρξη συνομιλιών. Ζητά τερματισμό αποκλεισμού, αποχώρηση αμερικανικών δυνάμεων, αποζημιώσεις και άρση κυρώσεων.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Το Ιράν δεν χρειάζεται να νικήσει στρατιωτικά τις ΗΠΑ. Αρκεί να διατηρεί επαρκή δυνατότητα διατάραξης της ενεργειακής ροής. Αυτό δημιουργεί ασυμμετρία: η Ουάσιγκτον προστατεύει ένα παγκόσμιο σύστημα, η Τεχεράνη μπορεί να εστιάζει σε συγκεκριμένους κόμβους.'
+  ],sources:[['Reuters 17/08','https://www.reuters.com/business/energy/oil-treads-water-us-iran-peace-talks-stall-hormuz-shipping-slows-2026-08-17/'],['Ναυτεμπορική 12/08','https://www.naftemporiki.gr/kosmos/2149446/giati-o-tramp-thelei-tora-na-allaxei-stratigiki-apenanti-sto-iran']]},
+  ukraine:{tag:'Στρατηγική Ανάλυση · Ουκρανία',title:'Από το μέτωπο στον πόλεμο των διαδρόμων',body:[
+    'Η σύγκρουση αποκτά όλο και περισσότερο χαρακτήρα <strong>πολέμου εναντίον υποδομών</strong>. Η Ουκρανία εξαπέλυσε ένα από τα φονικότερα πλήγματα με drones στο Ταταρστάν, 1.100 χλμ. από τα σύνορα — περιοχή με κρίσιμες εγκαταστάσεις διύλισης και πετροχημικής παραγωγής.',
+    'Η Ρωσία από την πλευρά της συνεχίζει μαζικές αεροπορικές επιθέσεις και πλήττει λιμενικές, χερσαίες και εναλλακτικές εμπορικές υποδομές. Ιδιαίτερη σημασία έχει το χτύπημα στη <strong>γέφυρα Μαγιάκι</strong> (9/08) που συνδέει την Οδησσός με Μολδαβία και Ρουμανία — αφορά τη δυνατότητα της Ουκρανίας να διατηρεί εμπορική σύνδεση με την ΕΕ.',
+    'Η Ουκρανία αναζητά πρόσωπο πολιτικού βάρους για τη θέση του πρεσβευτή στην Ουάσιγκτον. Η προειδοποίηση για μείωση αντιαεροπορικής υποστήριξης και η συμμετοχή της Βόρειας Κορέας υπογραμμίζουν τη διεθνοποίηση του μετώπου.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η σύγκρουση δεν κρίνεται πλέον μόνο στη γραμμή επαφής. Κρίνεται στην αντοχή των δικτύων: ενέργεια, εμπορικοί διάδρομοι, λιμάνια, γέφυρες και βιομηχανική παραγωγή.'
+  ],sources:[['Financial Times 15/08','https://www.ft.com/content/ukraine-drone-strikes-russia-infrastructure-2026'],['Καθημερινή 11/08','https://www.kathimerini.gr/world/563123/oukrania-pligma-sti-yefyra-magiaki/']]},
+  middleeast:{tag:'Στρατηγική Ανάλυση · Μέση Ανατολή',title:'Τουρκία, Αίγυπτος, Σ. Αραβία, Πακιστάν · νέο πλέγμα',body:[
+    'Η πλέον ενδιαφέρουσα διπλωματική εξέλιξη της εβδομάδας ήταν η <strong>πολλαπλή κινητικότητα της Άγκυρας</strong>. Η επίσκεψη Χακάν Φιντάν στο Κάιρο (13–14/08) ακολούθησε επαφές στη Λιβύη και την αμυντική συμφωνία Τουρκίας–Σαουδικής Αραβίας–Πακιστάν.',
+    'Η Τουρκία δεν επιλέγει ένα στρατόπεδο. Λειτουργεί ως <strong>κόμβος πολλαπλών σχέσεων</strong>: συνομιλεί με το Κάιρο για την ανατολική Μεσόγειο και τη Λιβύη, με το Ριάαντ για την άμυνα, με το Ισλαμαμπάντ για την τεχνολογία, ενώ διατηρεί διαύλους με τη Μόσχα και την Τεχεράνη.',
+    'Παράλληλα, τα κράτη του Κόλπου επιδιώκουν <strong>στρατηγική αυτονομία</strong>. Η αμερικανική ομπρέλα θεωρείται αναγκαία αλλά όχι επαρκής. Η αναζήτηση συμπληρωματικών εγγυήσεων ασφαλείας δημιουργεί ένα σύστημα πολλαπλών ισορροπιών.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η Μέση Ανατολή μεταβαίνει από την εποχή των διμερών συμμαχιών σε ένα πλέγμα ρευστότερων, θεματικών συμπράξεων.'
+  ],sources:[['Anadolu Agency 14/08','https://www.aa.com.tr/en/turkey/fidan-egypt-visit-regional-security/3298123'],['Al Jazeera 15/08','https://www.aljazeera.com/news/2026/8/15/turkey-saudi-pakistan-defence-pact']]},
+  gaza:{tag:'Στρατηγική Ανάλυση · Γάζα',title:'Η Ουάσιγκτον συγκρούεται με τις επιλογές του εταίρου της',body:[
+    'Ο Αμερικανός απεσταλμένος Τζάρεντ Κούσνερ συνάντηθηκε στο Κάιρο με αντιπροσωπεία της Χαμάς (με αιγυπτιακή/καταρινή διαμεσολάβηση) και στη συνέχεια μετέβη στην Ιερουσαλήμ για συνομιλίες με τον Νετανιάχου.',
+    'Η αμερικανική πρόταση για κατάπαυση του πυρός και απελευθέρωση ομήρων προσκρούει στην ισραηλινή απόρριψη. Η Ουάσιγκτον επιδιώκει να κλείσει το μέτωπο της Γάζας για να εστιάσει στο Ιράν, αλλά η ισραηλινή κυβέρνηση διατηρεί δική της ατζέντα.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η διαφωνία ΗΠΑ–Ισραήλ αποκαλύπτει τα όρια της αμερικανικής επιρροής ακόμη και σε στενούς συμμάχους όταν διακυβεύονται εσωτερικοί πολιτικοί συσχετισμοί.'
+  ],sources:[['Times of Israel 17/08','https://www.timesofisrael.com/kushner-meets-netanyahu-after-cairo-talks/'],['Haaretz 16/08','https://www.haaretz.com/israel-news/2026-08-16/ty-article/us-israel-friction-gaza-ceasefire/']]},
+  turkey:{tag:'Στρατηγική Ανάλυση · Τουρκία',title:'Άγκυρα · η στρατηγική του αυτόνομου κόμβου',body:[
+    'Η τουρκική εξωτερική πολιτική την εβδομάδα 10–17 Αυγούστου αποτελεί υπόδειγμα στρατηγικής εξισορρόπησης. Ο Χακάν Φιντάν κάλυψε σε λίγες ημέρες το Κάιρο, την Τρίπολη και το Ριάντ.',
+    'Η Άγκυρα αξιοποιεί την αμυντική της βιομηχανία (UAVs, ναυπηγική) ως διπλωματικό εργαλείο, προσφέροντας τεχνολογία έναντι κεφαλαίων και πολιτικής επιρροής.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η Τουρκία εδραιώνεται ως περιφερειακός δρών που δεν μπορεί να αγνοηθεί ούτε από τη Δύση ούτε από την Ανατολή.'
+  ],sources:[['Daily Sabah 14/08','https://www.dailysabah.com/diplomacy/2026/08/14/fidan-egypt-talks-mediterranean-libya'],['Hurriyet 15/08','https://www.hurriyetdailynews.com/turkey-regional-diplomacy-blitz-2026']]},
+  syria:{tag:'Στρατηγική Ανάλυση · Συρία',title:'Ρωσία–Συρία · διατήρηση αποτυπώματος στη Μεσόγειο',body:[
+    'Η συμφωνία για μετατροπή των ρωσικών βάσεων σε Ταρτούς και Χμάιμιμ σε «κέντρα κοινής εκπαίδευσης» δείχνει την πρόθεση της Μόσχας να διατηρήσει τη ναυτική και αεροπορική της παρουσία στην Ανατολική Μεσόγειο.',
+    'Παρά τις αλλαγές στο συριακό πολιτικό σκηνικό, η γεωστρατηγική αξία των υποδομών της Λατάκειας παραμένει αδιαμφισβήτητη για το ρωσικό ναυτικό.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η Ρωσία προσαρμόζει τη νομική μορφή της παρουσίας της χωρίς να εγκαταλείπει τις θερμές θάλασσες.'
+  ],sources:[['TASS 10/08','https://tass.com/defense/tartus-khmeimim-joint-training-agreement-2026'],['RIA Novosti 11/08','https://ria.ru/20260811/syria-russia-bases/']]},
+  china:{tag:'Στρατηγική Ανάλυση · Κίνα',title:'PBOC & reverse repo · η οικονομική ισχύς ως όπλο',body:[
+    'Η Λαϊκή Τράπεζα της Κίνας (PBOC) προχώρησε σε σημαντικές ενέσεις ρευστότητας μέσω reverse repo για να σταθεροποιήσει τη διατραπεζική αγορά και να στηρίξει την εγχώρια ανάπτυξη.',
+    'Σε ένα περιβάλλον παγκόσμιας αβεβαιότητας λόγω Ορμούζ, το Πεκίνο χρησιμοποιεί τη νομισματική σταθερότητα για να προσφέρει εναλλακτική στις αναδυόμενες οικονομίες.',
+    '<strong>Στρατηγικό συμπέρασμα:</strong> Η Κίνα διεξάγει τον ανταγωνισμό ισχύος κυρίως στο πεδίο της οικονομίας, της εφοδιαστικής αλυσίδας και της χρηματοπιστωτικής ρευστότητας.'
+  ],sources:[['Bloomberg 14/08','https://www.bloomberg.com/news/articles/2026-08-14/pboc-injects-liquidity-reverse-repo-stabilize-markets'],['Xinhua 14/08','https://english.news.cn/20260814/pboc-operations/']]},
+  middleeast_matrix:{tag:'Αναλυτική Αξιολόγηση Πίεσης',title:'Matrix analysis · συγκριτική ανάγνωση',body:[
+    'Ο πίνακας πίεσης αποτυπώνει την <strong>πολυδιάστατη φύση των σύγχρονων κρίσεων</strong>. Το Στενό του Ορμούζ καταγράφει το υψηλότερο συνολικό σκορ λόγω της άμεσης διασύνδεσης στρατιωτικής, ενεργειακής και εφοδιαστικής πίεσης.',
+    'Η Ουκρανία ακολουθεί με υψηλή στρατιωτική και εφοδιαστική ένταση, ενώ η Τουρκία/Αν. Μεσόγειος εμφανίζει την υψηλότερη διπλωματική κινητικότητα.',
+    '<strong>Μεθοδολογική παρατήρηση:</strong> Τα σκορ προκύπτουν από τη στάθμιση τριών μεταβλητών: συχνότητα επεισοδίων, γεωγραφικό εύρος επιπτώσεων και βαθμός εμπλοκής μεγάλων δυνάμεων.'
+  ],sources:[['SITROOM Analytics 17/08','#']]}
+};
+
+function openModal(key){
+  const d=data[key]||data['hormuz'];
+  document.getElementById('modalTag').textContent=d.tag;
+  document.getElementById('modalTitle').textContent=d.title;
+  document.getElementById('modalBody').innerHTML=d.body.map(p=>`<p>${p}</p>`).join('');
+  document.getElementById('modalSources').innerHTML=d.sources.map(([name,url])=>`<a href="${url}" target="_blank" class="modal-source">${name} ↗</a>`).join('');
+  const m=document.getElementById('modalBack');
+  m.style.display='flex';
+}
+document.getElementById('modalClose').addEventListener('click',()=>{document.getElementById('modalBack').style.display='none'});
+document.getElementById('modalBack').addEventListener('click',(e)=>{if(e.target===document.getElementById('modalBack'))document.getElementById('modalBack').style.display='none'});
+
+document.querySelectorAll('[data-open]').forEach(el=>el.addEventListener('click',()=>openModal(el.dataset.open)));
+document.querySelectorAll('[data-matrix]').forEach(btn=>btn.addEventListener('click',()=>{
+  const [axis,dim,val]=btn.dataset.matrix.split('|');
+  const modalData = data['middleeast_matrix'];
+  modalData.tag = `Αναλυτικό Сκορ · ${axis} / ${dim}`;
+  modalData.title = `${axis} · ${dim}: Σκορ ${val}/5`;
+  modalData.body = [
+    `Η αξιολόγηση <strong>${val}/5</strong> στον άξονα <strong>${dim}</strong> για την περιοχή <strong>${axis}</strong> βασίζεται στα δεδομένα της περιόδου 10–17 Αυγούστου 2026.`,
+    `<strong>Παράγοντες διαμόρφωσης:</strong> Ένταση επεισοδίων, επίπτωση στις παγκόσμιες αλυσίδες εφοδιασμού, βαθμός στρατιωτικής εμπλοκής και διπλωματική δραστηριότητα.`,
+    `Για αναλυτική επισκόπηση των γεγονότων της περιοχής, επιλέξτε την αντίστοιχη κάρτα στην αρχική σελίδα.`
+  ];
+  openModal('middleeast_matrix');
+}));
+</script>
+</body>
+</html>
